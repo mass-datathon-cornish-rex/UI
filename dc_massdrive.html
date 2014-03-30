@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>dc_massdrive</title>
+    <link rel="stylesheet" type="text/css" href="css/dc.css"/>
+    <link rel="stylesheet" type="text/css" href="css/styles.css"/>
+    <script type="text/javascript" src="lib/d3.js"></script>
+    <script type="text/javascript" src="lib/crossfilter.js"></script>
+    <script type="text/javascript" src="lib/dc.js"></script>
+    <script>
+        var aC, dC, bC;
+    </script>
+</head>
+
+<body>
+
+<!--
+<div id="area-chart"></div>
+
+<div id="donut-chart"></div>
+
+<div id="bar-chart"></div>
+-->
+
+<div id="areaChart" class="dc-chart">
+    <strong>Area Chart</strong> 
+    <a class="reset" href="javascript:aC.filterAll();dc.redrawAll();"
+       style="display: none;">reset</a>
+    <div class="clearfix"></div>
+</div>
+<div id="donutChart" class="dc-chart">
+    <strong>Donut Chart</strong> 
+    <a class="reset" href="javascript:dC.filterAll();dc.redrawAll();"
+       style="display: none;">reset</a>
+    <div class="clearfix"></div>
+</div>
+<div id="barChart" class="dc-chart">
+    <strong>Bar Chart</strong> 
+    <a class="reset" href="javascript:bC.filterAll();dc.redrawAll();"
+       style="display: none;">reset</a>
+    <div class="clearfix"></div>
+</div>
+
+<a href="javascript:dc.filterAll(); dc.renderAll();">Reset All</a>
+
+<script type="text/javascript">
+    var yAxis = d3.svg.axis()
+        .tickFormat(d3.format("s"))
+        .orient("left");
+
+    d3.csv('car_make_10_rows.csv', function(csv){
+        var data = crossfilter(csv);
+
+        var makes = data.dimension(function(d){
+            return d.make_name;
+        });
+        var countByMake = makes.group().reduceSum(function(d){
+                                return d.count;
+                            });
+
+        // Although this is inefficient, for other charts use copies of these ("different" dimension 
+        // and group) so that cross filtering will work.
+
+        var makes2 = data.dimension(function(d){
+            return d.make_name;
+        });
+        var countByMake2 = makes2.group().reduceSum(function(d){
+                                return d.count;
+                           });
+
+        var makes3 = data.dimension(function(d){
+            return d.make_name;
+        });
+        var countByMake3 = makes3.group().reduceSum(function(d){
+                                return d.count;
+                           });
+        
+        aC = dc.lineChart("#areaChart")
+                .width(1000)
+                .height(250)
+                .dimension(makes)
+                .group(countByMake)
+                .x(d3.scale.ordinal().domain(makes))
+                .elasticY(true)
+                .renderArea(true)
+                .xUnits(dc.units.ordinal)
+                .yAxis(yAxis)
+                .margins({top: 10, right: 50, bottom: 30, left: 40})
+                ;
+        
+
+        dC = dc.pieChart("#donutChart")
+                .width(250)
+                .height(250)
+                .radius(125)
+                .innerRadius(50)
+                .dimension(makes2)
+                .group(countByMake2)
+                ;
+
+        bC = dc.barChart("#barChart")
+                .width(1000)
+                .height(250)
+                .dimension(makes3)
+                .group(countByMake3)
+                .x(d3.scale.ordinal().domain(makes))
+                .xUnits(dc.units.ordinal)
+                .elasticY(true)
+                .centerBar(true)
+                .yAxis(yAxis)
+                .margins({top: 10, right: 50, bottom: 30, left: 40})
+                ;
+
+        dc.renderAll();
+    });
+</script>
+
+</body>
+
+</html>
